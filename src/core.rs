@@ -18,6 +18,7 @@ use memchr::memchr_iter;
 pub trait Parser: Send + Sync {
     fn name(&self) -> Cow<'static, str>;
     fn description(&self) -> Cow<'static, str>;
+
     /// Return true if a JSONL record was emitted.
     fn process_line_to_buf(&self, line: &str, out: &mut Vec<u8>) -> bool;
 }
@@ -73,7 +74,7 @@ pub fn is_gzip(path: &Path) -> Result<bool> {
 pub fn run_streaming_parallel(
     parser: &dyn Parser,
     input: &Path,
-    mut writer: Box<dyn Write + Send>,
+    writer: Box<dyn Write + Send>,
     workers: usize,
 ) -> Result<usize> {
     const BYTES_BLOB_TARGET: usize = 4 << 20; // 4 MiB
@@ -188,6 +189,7 @@ pub type ParserFactory = fn() -> Box<dyn Parser>;
 pub fn registry() -> &'static [ParserFactory] {
     &[
         crate::modules::web_access::new,
+        crate::modules::mactime::new,
         crate::modules::csv_dummy::new, // keep if useful
     ]
 }
